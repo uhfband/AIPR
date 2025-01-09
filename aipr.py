@@ -16,6 +16,9 @@ chunks = os.environ["FILE_CHUNKS"]
 openai.api_key = open_ai_api_key
 question = issue_body
 
+from openai import OpenAI
+client = OpenAI(api_key = os.environ["OPENAI_API_KEY"])
+
 # Step 2: Read all files from a local repository
 def read_all_files_from_directory(directory):
     file_contents = {}
@@ -58,12 +61,20 @@ def request_changes_from_openai_in_chunks(context, filename, max_chunk_size):
     modified_chunks = []
     for chunk in chunks:
         # Send each chunk to OpenAI
-        response = openai.Completion.create(
+        response = client.chat.completions.create(
             model=open_ai_model if len(open_ai_model) else "gpt-3.5-turbo-instruct",
-            prompt="Giving the filename:'" + filename + "' and the following content:'" + chunk + "'\n modify the content to provide a solution for this issue:\n'" + question + "'\n and output the result.",
+            messages=[
+                {"role": "developer", "content": "You are a helpful assistant."},
+                {
+                    "role": "user",
+                    "content": "Giving the filename:'" + filename + "' and the following content:'" + chunk + "'\n modify the content to provide a solution for this issue:\n'" + question + "'\n and output the result.",
+                }
+            ],
+            #prompt="Giving the filename:'" + filename + "' and the following content:'" + chunk + "'\n modify the content to provide a solution for this issue:\n'" + question + "'\n and output the result.",
             max_tokens=int(open_ai_tokens) or 200
+            #max_completion_tokens
         )
-        modified_chunk = response.choices[0].text.strip()
+        modified_chunk = response.choices[0].message.content.strip()
         modified_chunks.append(modified_chunk)
 
     # Combine the modified chunks
