@@ -41,15 +41,23 @@ def split_into_chunks(text, chunk_size):
     return chunks
 
 
-# Step 3: Query OpenAI for changes (this is a simplistic approach and can be refined)
-def request_changes_from_openai_old(context, filename):
-    response = openai.Completion.create(
-        model=open_ai_model or "gpt-3.5-turbo-instruct",
-        prompt="Giving the filename:'" + filename  + "' and the following content:'" + context + "'\n modify the content to provide a solution for this issue:\n'" + question + "'\n and output the result.",
-        max_tokens=int(open_ai_tokens) or 200  # you can adjust this based on your needs
+def request_changes_from_openai(context, filename):
+    code_type = filename.split('.')[-1]
+    response = client.chat.completions.create(
+        model=open_ai_model if len(open_ai_model) else "gpt-3.5-turbo-instruct",
+        messages=[
+            {"role": "developer", "content": "You are a helpful assistant."},
+            {
+                "role": "user",
+                "content": "Modify the following code:\n```" + code_type + "\n" + context + "\n```\n to provide a solution for this issue:\n'" + question + "'\n and output only code.",
+            }
+        ],
+        #prompt="Giving the filename:'" + filename + "' and the following content:'" + chunk + "'\n modify the content to provide a solution for this issue:\n'" + question + "'\n and output the result.",
+        max_tokens=int(open_ai_tokens) or 200
+        #max_completion_tokens
     )
     print('reponse choices', response.choices)
-    return response.choices[0].text.strip()
+    return response.choices[0].message.content.strip()
 
 def request_changes_from_openai_in_chunks(context, filename, max_chunk_size):
     """
@@ -124,7 +132,7 @@ if __name__ == "__main__":
     
     for filename, content in all_files.items():
         if filename in files_in_prompt_full_path:
-            modified_content = request_changes_from_openai(content, filename) if int(chunks) == 0 else request_changes_from_openai_in_chunks(content, filename, int(chunks))
+            modified_content = request_changes_from_openai(content, filename)
             print('modified content', modified_content)
             print('original content', content)
             patch = generate_patch(content, modified_content, filename)
