@@ -42,7 +42,7 @@ def split_into_chunks(text, chunk_size):
 
 
 # Step 3: Query OpenAI for changes (this is a simplistic approach and can be refined)
-def request_changes_from_openai(context, filename):
+def request_changes_from_openai_old(context, filename):
     response = openai.Completion.create(
         model=open_ai_model or "gpt-3.5-turbo-instruct",
         prompt="Giving the filename:'" + filename  + "' and the following content:'" + context + "'\n modify the content to provide a solution for this issue:\n'" + question + "'\n and output the result.",
