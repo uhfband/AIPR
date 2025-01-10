@@ -43,13 +43,14 @@ def split_into_chunks(text, chunk_size):
 
 def request_changes_from_openai(context, filename):
     code_type = filename.split('.')[-1]
+    code_type = ''
     response = client.chat.completions.create(
         model=open_ai_model if len(open_ai_model) else "gpt-3.5-turbo-instruct",
         messages=[
             {"role": "developer", "content": "You are a helpful assistant."},
             {
                 "role": "user",
-                "content": "Modify the following code:\n```" + code_type + "\n" + context + "\n```\n to provide a solution for this issue:\n'" + question + "'\n and output only code.",
+                "content": "Modify the following code:\n```\n" + context + "\n```\n to provide a solution for this issue:\n'" + question,
             }
         ],
         #prompt="Giving the filename:'" + filename + "' and the following content:'" + chunk + "'\n modify the content to provide a solution for this issue:\n'" + question + "'\n and output the result.",
@@ -57,37 +58,9 @@ def request_changes_from_openai(context, filename):
         #max_completion_tokens
     )
     print('reponse choices', response.choices)
+    resp = response.choices[0].message.content.split('```')
+    return resp[1]
     return response.choices[0].message.content.strip()
-
-def request_changes_from_openai_in_chunks(context, filename, max_chunk_size):
-    """
-    Request changes from OpenAI by processing the content in chunks.
-    """
-    # Split the context into chunks
-    chunks = split_into_chunks(context, max_chunk_size)
-
-    modified_chunks = []
-    for chunk in chunks:
-        # Send each chunk to OpenAI
-        response = client.chat.completions.create(
-            model=open_ai_model if len(open_ai_model) else "gpt-3.5-turbo-instruct",
-            messages=[
-                {"role": "developer", "content": "You are a helpful assistant."},
-                {
-                    "role": "user",
-                    "content": "Giving the filename:'" + filename + "' and the following content:'" + chunk + "'\n modify the content to provide a solution for this issue:\n'" + question + "'\n and output the result.",
-                }
-            ],
-            #prompt="Giving the filename:'" + filename + "' and the following content:'" + chunk + "'\n modify the content to provide a solution for this issue:\n'" + question + "'\n and output the result.",
-            max_tokens=int(open_ai_tokens) or 200
-            #max_completion_tokens
-        )
-        modified_chunk = response.choices[0].message.content.strip()
-        modified_chunks.append(modified_chunk)
-
-    # Combine the modified chunks
-    return "".join(modified_chunks)
-
 
 def add_linebreaks(input_list):
     """
