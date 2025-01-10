@@ -57,7 +57,7 @@ def request_changes_from_openai(context, filename):
         #max_completion_tokens
     )
     print('reponse choices', response.choices)
-    resp = response.choices[0].message.content.split('```' + code_type)
+    resp = response.choices[0].message.content.split('```' + code_type + "\n")
     return resp[1].split('```')[0]
     
     return response.choices[0].message.content.strip()
