@@ -42,7 +42,7 @@ def split_into_chunks(text, chunk_size):
 
 
 def request_changes_from_openai(context, filename):
-    code_type = filename.split('.')[-1]
+    code_type = filename.split('.')[-1].replace('py', 'python')
     response = client.chat.completions.create(
         model=open_ai_model if len(open_ai_model) else "gpt-3.5-turbo-instruct",
         messages=[
