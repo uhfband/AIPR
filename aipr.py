@@ -49,7 +49,7 @@ def request_changes_from_openai(context, filename):
             {"role": "developer", "content": "You are a helpful assistant."},
             {
                 "role": "user",
-                "content": "Modify the following code:\n```" + code_type + "\n" + context + "\n```\n to provide a solution for this issue:\n'" + question + ", output only code.",
+                "content": "Modify the following code:\n```" + code_type + "\n" + context + "\n```\n to provide a solution for this issue:\n'" + question + "'\n and output only code.",
             }
         ],
         #prompt="Giving the filename:'" + filename + "' and the following content:'" + chunk + "'\n modify the content to provide a solution for this issue:\n'" + question + "'\n and output the result.",
