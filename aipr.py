@@ -43,14 +43,13 @@ def split_into_chunks(text, chunk_size):
 
 def request_changes_from_openai(context, filename):
     code_type = filename.split('.')[-1]
-    code_type = ''
     response = client.chat.completions.create(
         model=open_ai_model if len(open_ai_model) else "gpt-3.5-turbo-instruct",
         messages=[
             {"role": "developer", "content": "You are a helpful assistant."},
             {
                 "role": "user",
-                "content": "Modify the following code:\n```\n" + context + "\n```\n to provide a solution for this issue:\n'" + question,
+                "content": "Modify the following code:\n```" + code_type + "\n" + context + "\n```\n to provide a solution for this issue:\n'" + question + ", output only code.",
             }
         ],
         #prompt="Giving the filename:'" + filename + "' and the following content:'" + chunk + "'\n modify the content to provide a solution for this issue:\n'" + question + "'\n and output the result.",
@@ -58,8 +57,9 @@ def request_changes_from_openai(context, filename):
         #max_completion_tokens
     )
     print('reponse choices', response.choices)
-    resp = response.choices[0].message.content.split('```')
-    return resp[1]
+    resp = response.choices[0].message.content.split('```' + code_type)
+    return resp[1].split('```')[0]
+    
     return response.choices[0].message.content.strip()
 
 def add_linebreaks(input_list):
